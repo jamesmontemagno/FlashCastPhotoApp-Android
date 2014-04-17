@@ -107,21 +107,26 @@ namespace FlashCastPhotoApp
       if (resultCode == Result.Canceled)
         return;
 
-      
+
       var mediaFile = await data.GetMediaFileExtraAsync(this);
 
       var drawable = await BitmapDrawable.CreateFromStreamAsync(mediaFile.GetStream(), "temp.jpg");
-      var bitmap = ((BitmapDrawable) drawable).Bitmap;
+      var bitmap = ((BitmapDrawable)drawable).Bitmap;
 
-      await Task.Factory.StartNew(() =>
+
+      var ratio = Math.Max(picture.Width / (float)bitmap.Width,
+                             picture.Height / (float)bitmap.Height);
+
+      var width = (int)(bitmap.Width * ratio);
+      var height = (int)(bitmap.Height * ratio);
+
+
+      finalBitmap = await Task.Run(() =>
       {
-        
-        finalBitmap = Bitmap.CreateScaledBitmap(bitmap, bitmap.Width/4, bitmap.Height/4, true);
-        
-        RunOnUiThread(() => {
-                              picture.SetImageBitmap(finalBitmap);
-        });
+        return Bitmap.CreateScaledBitmap(bitmap, width, height, true);
       });
+      picture.SetImageBitmap(finalBitmap);
+
     }
   }
 }
